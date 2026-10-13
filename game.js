@@ -1,13 +1,12 @@
 // =======================================================
 // Kids Weekdays Adventure 🚀
-// Pure Generic Learning Web App (Zero Personal Data)
-// Features:
-// - Distinct Musical Sound + Number + Day combination
-// - Hypothetical Questioning ("Let's say today is...")
-// - Clean Choice Cards (No numbers shown, no cheating)
+// 100% Pre-Literate Friendly:
+// - Spoken Audio for Every Option & Action
+// - "Listen Before You Choose" Preview Buttons
+// - Full Verbal Right/Wrong Explanation on Click
+// - "Listen & Pick" Audio Detective Subgame
 // =======================================================
 
-// Master Days configuration with distinct musical frequencies
 const BASE_DAYS = [
   {
     id: "mon",
@@ -86,17 +85,23 @@ let weekOrder = "monday";
 let activeDays = [];
 let soundEnabled = true;
 let stars = 0;
+let showNumberClues = false; // Toggle to show numbers on choice cards if needed
 
 // Level 1 State
 let learnActiveNumber = 1;
 
-// Level 2 State
+// Level 2 (What's Next) State
 let currentRound = 1;
 const TOTAL_ROUNDS = 5;
 let currentQuestionDay = null;
 let currentCorrectNextDay = null;
 
-// Level 3 State
+// Level 3 (Audio Detective) State
+let detectiveRound = 1;
+let detectiveQuestionDay = null;
+let detectiveTargetDay = null;
+
+// Level 4 (Train) State
 let trainExpectedIndex = 0;
 
 // Web Audio API Synthesizer
@@ -114,7 +119,6 @@ function initAudio() {
   }
 }
 
-// Sound effects synthesizer
 const soundFx = {
   pop() {
     if (!soundEnabled || !audioCtx) return;
@@ -394,7 +398,6 @@ function handleNextNumberStep() {
   }
 }
 
-// Sequentially play all 7 days in melody
 function playAllDaysMelody() {
   initAudio();
   soundFx.pop();
@@ -420,7 +423,7 @@ function playAllDaysMelody() {
 }
 
 // =======================================================
-// LEVEL 2: WHAT'S NEXT? (HYPOTHETICAL QUESTIONING)
+// LEVEL 2: WHAT'S NEXT? (HYPOTHETICAL + VERBAL FEEDBACK)
 // =======================================================
 function setupNextDayRound() {
   const currentIdx = Math.floor(Math.random() * activeDays.length);
@@ -431,7 +434,6 @@ function setupNextDayRound() {
 
   document.getElementById("round-indicator").textContent = `Round ${currentRound}/${TOTAL_ROUNDS}`;
   
-  // Hypothetical question phrasing (avoiding "Today is...")
   const questionPhrases = [
     `Let's say today is ${currentQuestionDay.name}!`,
     `Imagine today is ${currentQuestionDay.name}!`,
@@ -455,7 +457,7 @@ function setupNextDayRound() {
   const feedbackEl = document.getElementById("feedback-message");
   feedbackEl.classList.add("hidden");
 
-  // Create choices WITHOUT ANY NUMBERS so the child cannot cheat by number-matching!
+  // Create choices
   const otherDays = activeDays.filter(d => d.id !== currentCorrectNextDay.id);
   const shuffledOthers = [...otherDays].sort(() => 0.5 - Math.random());
   const selectedDistractors = shuffledOthers.slice(0, 3);
@@ -465,26 +467,53 @@ function setupNextDayRound() {
   choicesContainer.innerHTML = "";
 
   allChoices.forEach(day => {
-    const btn = document.createElement("button");
-    btn.className = "choice-card";
-    // ONLY emoji and day name (NO number badges!)
-    btn.innerHTML = `
+    const wrapper = document.createElement("div");
+    wrapper.className = "choice-card-wrapper";
+
+    // Main tap button
+    const cardBtn = document.createElement("button");
+    cardBtn.className = "choice-card";
+    cardBtn.style.borderColor = day.color;
+    
+    let topBadgeHtml = "";
+    if (showNumberClues) {
+      topBadgeHtml = `
+        <div class="choice-top-badge-row">
+          <span class="choice-num-tag">Number ${day.dayNum}</span>
+        </div>
+      `;
+    }
+
+    cardBtn.innerHTML = `
+      ${topBadgeHtml}
       <span class="choice-emoji">${day.emoji}</span>
       <span class="choice-name">${day.name}</span>
     `;
-    btn.style.borderColor = day.color;
-    btn.addEventListener("click", () => handleChoiceTap(day, btn));
-    choicesContainer.appendChild(btn);
+
+    cardBtn.addEventListener("click", () => handleChoiceTap(day, cardBtn));
+
+    // Audio preview button (child can hear what this button is BEFORE guessing!)
+    const listenBtn = document.createElement("button");
+    listenBtn.className = "choice-listen-btn";
+    listenBtn.innerHTML = `<span>🔊 Listen: "${day.name}"</span>`;
+    listenBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      initAudio();
+      soundFx.playTone(day.freq, 0.3);
+      speak(`This option is ${day.name}!`);
+    });
+
+    wrapper.appendChild(cardBtn);
+    wrapper.appendChild(listenBtn);
+    choicesContainer.appendChild(wrapper);
   });
 
-  // Hypothetical voice prompt
-  const voicePrompt = `Let's say today is ${currentQuestionDay.name}! What day comes next?`;
+  const voicePrompt = `Let's say today is ${currentQuestionDay.name}! What day comes next? You can tap the speaker to hear each card!`;
   speak(voicePrompt);
 }
 
 function handleChoiceTap(selectedDay, buttonEl) {
   initAudio();
-  soundFx.pop();
 
   const feedbackEl = document.getElementById("feedback-message");
   feedbackEl.classList.remove("hidden");
@@ -499,15 +528,12 @@ function handleChoiceTap(selectedDay, buttonEl) {
     document.getElementById("star-count").textContent = stars;
 
     feedbackEl.className = "feedback-msg success";
-    feedbackEl.innerHTML = `🌟 <strong>Great job!</strong><br>${selectedDay.name} comes after ${currentQuestionDay.name}! (${selectedDay.dayNum} is ${selectedDay.name})`;
+    feedbackEl.innerHTML = `✅ <strong>You clicked ${selectedDay.name}! That is CORRECT!</strong><br>${selectedDay.name} comes after ${currentQuestionDay.name}! (${selectedDay.dayNum} is ${selectedDay.name})`;
 
-    // Play jingle for the correct answer
-    soundFx.playTone(selectedDay.freq, 0.3);
-    setTimeout(() => {
-      speak(`That's right! After ${currentQuestionDay.name} comes ${selectedDay.name}! ${selectedDay.dayNum} is ${selectedDay.name}!`);
-    }, 200);
+    // Voice explicitly announces what was clicked and that it is correct!
+    speak(`You clicked ${selectedDay.name}! That is CORRECT! ${selectedDay.name} comes after ${currentQuestionDay.name}! Wonderful job!`);
 
-    const allBtns = document.querySelectorAll(".choice-card");
+    const allBtns = document.querySelectorAll(".choice-card, .choice-listen-btn");
     allBtns.forEach(b => b.style.pointerEvents = "none");
 
     setTimeout(() => {
@@ -517,7 +543,7 @@ function handleChoiceTap(selectedDay, buttonEl) {
         currentRound++;
         setupNextDayRound();
       }
-    }, 2400);
+    }, 2800);
 
   } else {
     // WRONG
@@ -525,18 +551,123 @@ function handleChoiceTap(selectedDay, buttonEl) {
     soundFx.boing();
 
     feedbackEl.className = "feedback-msg try-again";
-    feedbackEl.innerHTML = `🤔 Almost! That's ${selectedDay.name}. What comes after ${currentQuestionDay.name}?`;
+    feedbackEl.innerHTML = `❌ <strong>You clicked ${selectedDay.name}! That is not correct.</strong><br>We need the day after ${currentQuestionDay.name} (Looking for <strong>${currentCorrectNextDay.name}</strong>).`;
 
-    speak(`Almost! What day comes after ${currentQuestionDay.name}?`);
+    // Voice explicitly tells him what he clicked and why it's not correct!
+    speak(`You clicked ${selectedDay.name}! That is not correct. We are looking for the day after ${currentQuestionDay.name}. Can you find ${currentCorrectNextDay.name}?`);
 
     setTimeout(() => {
       buttonEl.classList.remove("wrong");
-    }, 800);
+    }, 1000);
   }
 }
 
 // =======================================================
-// LEVEL 3: DAY TRAIN
+// LEVEL 3: LISTEN & PICK (AUDIO DETECTIVE SUBGAME)
+// =======================================================
+function setupAudioDetective() {
+  const currentIdx = Math.floor(Math.random() * activeDays.length);
+  detectiveQuestionDay = activeDays[currentIdx];
+
+  const nextIdx = (currentIdx + 1) % activeDays.length;
+  detectiveTargetDay = activeDays[nextIdx];
+
+  document.getElementById("detective-round-indicator").textContent = `Mission ${detectiveRound}/5`;
+  document.getElementById("mission-prompt-text").textContent = `Let's say today is ${detectiveQuestionDay.name}...`;
+  document.getElementById("mission-target-day-name").textContent = detectiveTargetDay.name;
+
+  const targetHearBtn = document.getElementById("mission-hear-target-btn");
+  targetHearBtn.textContent = `🔊 Hear Mission: "Find ${detectiveTargetDay.name}"`;
+
+  const feedbackEl = document.getElementById("detective-feedback");
+  feedbackEl.classList.add("hidden");
+
+  // Create mystery cards with audio buttons
+  const otherDays = activeDays.filter(d => d.id !== detectiveTargetDay.id);
+  const shuffledOthers = [...otherDays].sort(() => 0.5 - Math.random());
+  const selectedDistractors = shuffledOthers.slice(0, 3);
+  const allChoices = [detectiveTargetDay, ...selectedDistractors].sort(() => 0.5 - Math.random());
+
+  const grid = document.getElementById("detective-choices-grid");
+  grid.innerHTML = "";
+
+  allChoices.forEach((day, index) => {
+    const card = document.createElement("div");
+    card.className = "mystery-card";
+    card.id = `detective-card-${index}`;
+
+    card.innerHTML = `
+      <div class="mystery-speaker-icon">🔊</div>
+      <div class="mystery-tap-label">Tap to Hear</div>
+    `;
+
+    card.addEventListener("click", () => {
+      handleDetectiveCardClick(day, card);
+    });
+
+    grid.appendChild(card);
+  });
+
+  const promptText = `Mission time! If today was ${detectiveQuestionDay.name}, what comes next? We are looking for ${detectiveTargetDay.name}! Tap each card to hear its sound, then pick ${detectiveTargetDay.name}!`;
+  speak(promptText);
+}
+
+function handleDetectiveCardClick(day, cardEl) {
+  initAudio();
+
+  // Reveal card emoji and name on tap
+  cardEl.innerHTML = `
+    <span class="choice-emoji">${day.emoji}</span>
+    <span class="choice-name">${day.name}</span>
+  `;
+
+  const feedbackEl = document.getElementById("detective-feedback");
+  feedbackEl.classList.remove("hidden");
+
+  if (day.id === detectiveTargetDay.id) {
+    // Correct!
+    cardEl.classList.add("correct");
+    soundFx.success();
+    launchConfetti();
+
+    stars += 1;
+    document.getElementById("star-count").textContent = stars;
+
+    feedbackEl.className = "feedback-msg success";
+    feedbackEl.innerHTML = `🎉 <strong>You found ${day.name}! Correct!</strong><br>${day.name} comes after ${detectiveQuestionDay.name}!`;
+
+    speak(`You found ${day.name}! That is CORRECT! Fantastic listening!`);
+
+    const allCards = document.querySelectorAll(".mystery-card");
+    allCards.forEach(c => c.style.pointerEvents = "none");
+
+    setTimeout(() => {
+      if (detectiveRound >= 5) {
+        showCelebration();
+      } else {
+        detectiveRound++;
+        setupAudioDetective();
+      }
+    }, 2800);
+
+  } else {
+    // Wrong
+    cardEl.classList.add("wrong");
+    soundFx.boing();
+
+    feedbackEl.className = "feedback-msg try-again";
+    feedbackEl.innerHTML = `❌ <strong>That is ${day.name}.</strong><br>Keep listening! We are looking for <strong>${detectiveTargetDay.name}</strong>!`;
+
+    speak(`That card says ${day.name}. Not ${day.name}. We are looking for ${detectiveTargetDay.name}! Tap another card to listen!`);
+
+    setTimeout(() => {
+      cardEl.classList.remove("wrong");
+    }, 1000);
+  }
+}
+
+// =======================================================
+// LEVEL 4: DAY TRAIN
 // =======================================================
 function setupTrainMode() {
   trainExpectedIndex = 0;
@@ -591,7 +722,7 @@ function handleTrainPick(day, pickBtn) {
     `;
 
     pickBtn.classList.add("used");
-    speak(`${day.dayNum} is ${day.name}!`);
+    speak(`You loaded ${day.name}! ${day.dayNum} is ${day.name}!`);
 
     trainExpectedIndex++;
 
@@ -607,7 +738,7 @@ function handleTrainPick(day, pickBtn) {
   } else {
     soundFx.boing();
     pickBtn.classList.add("wrong");
-    speak(`Not quite! Car number ${trainExpectedIndex + 1} needs ${targetDay.name}!`);
+    speak(`You picked ${day.name}. That is not right for car number ${trainExpectedIndex + 1}. Car number ${trainExpectedIndex + 1} needs ${targetDay.name}!`);
     setTimeout(() => {
       pickBtn.classList.remove("wrong");
     }, 600);
@@ -626,6 +757,7 @@ function showCelebration() {
 function resetGame() {
   document.getElementById("celebration-modal").classList.add("hidden");
   currentRound = 1;
+  detectiveRound = 1;
   setupNextDayRound();
 }
 
@@ -640,7 +772,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initAudio();
     soundFx.success();
     document.getElementById("start-overlay").classList.add("hidden");
-    speak("Welcome! Let's learn the days of the week!");
+    speak("Welcome! The game will speak every card and tell you what is right and wrong!");
     setupLearnNumbers();
   });
 
@@ -654,6 +786,22 @@ document.addEventListener("DOMContentLoaded", () => {
       soundFx.pop();
     } else {
       if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    }
+  });
+
+  // Toggle Number Clues button
+  const toggleCluesBtn = document.getElementById("toggle-clues-btn");
+  toggleCluesBtn.addEventListener("click", () => {
+    initAudio();
+    soundFx.pop();
+    showNumberClues = !showNumberClues;
+    toggleCluesBtn.textContent = showNumberClues ? "Show Numbers: ON 🔢" : "Show Numbers: OFF";
+    toggleCluesBtn.classList.toggle("active", showNumberClues);
+    setupNextDayRound();
+    if (showNumberClues) {
+      speak("Number clues are turned on!");
+    } else {
+      speak("Number clues are turned off!");
     }
   });
 
@@ -684,6 +832,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Level 3 Detective Buttons
+  document.getElementById("repeat-detective-btn").addEventListener("click", () => {
+    initAudio();
+    soundFx.pop();
+    if (detectiveQuestionDay && detectiveTargetDay) {
+      speak(`Mission! If today was ${detectiveQuestionDay.name}, what day comes next? We are looking for ${detectiveTargetDay.name}!`);
+    }
+  });
+
+  document.getElementById("mission-hear-target-btn").addEventListener("click", () => {
+    initAudio();
+    soundFx.pop();
+    if (detectiveTargetDay) {
+      speak(`Target: Find ${detectiveTargetDay.name}!`);
+    }
+  });
+
   // Weekday start toggle (Monday vs Sunday)
   const monBtn = document.getElementById("start-monday-btn");
   const sunBtn = document.getElementById("start-sunday-btn");
@@ -696,6 +861,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateWeekOrder("monday");
     setupLearnNumbers();
     setupNextDayRound();
+    setupAudioDetective();
     setupTrainMode();
     speak("Week starts on Monday!");
   });
@@ -708,6 +874,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateWeekOrder("sunday");
     setupLearnNumbers();
     setupNextDayRound();
+    setupAudioDetective();
     setupTrainMode();
     speak("Week starts on Sunday!");
   });
@@ -729,6 +896,8 @@ document.addEventListener("DOMContentLoaded", () => {
         setupLearnNumbers();
       } else if (mode === "next-day") {
         setupNextDayRound();
+      } else if (mode === "audio-detective") {
+        setupAudioDetective();
       } else if (mode === "train-order") {
         setupTrainMode();
       }

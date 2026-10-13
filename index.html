@@ -22,13 +22,13 @@
   <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
 
   <div class="app-container">
-    <!-- Header (100% Generic, Zero Child Name) -->
+    <!-- Header -->
     <header class="app-header">
       <div class="user-greeting">
         <span class="avatar-badge">🧒</span>
         <div>
           <h1 class="player-title">Weekdays <span class="name-highlight">Adventure</span> 🌟</h1>
-          <p class="subtitle">Learn Days & Musical Numbers</p>
+          <p class="subtitle">Learn by Hearing & Numbers</p>
         </div>
       </div>
       
@@ -41,7 +41,7 @@
       </div>
     </header>
 
-    <!-- Week Convention Switcher -->
+    <!-- Week Convention Switcher & Audio Starter Notice -->
     <section class="settings-bar">
       <div class="convention-toggle">
         <span class="toggle-label">Week starts on:</span>
@@ -60,6 +60,10 @@
         <span class="tab-icon">🔮</span>
         <span class="tab-text">What's Next?</span>
       </button>
+      <button class="mode-tab" data-mode="audio-detective">
+        <span class="tab-icon">🎧</span>
+        <span class="tab-text">Listen & Pick</span>
+      </button>
       <button class="mode-tab" data-mode="train-order">
         <span class="tab-icon">🚂</span>
         <span class="tab-text">Day Train</span>
@@ -68,12 +72,12 @@
 
     <!-- Main Game Area -->
     <main class="game-main">
-      <!-- Welcome / Tap to Start Overlay (Unlocks mobile audio) -->
+      <!-- Welcome / Tap to Start Overlay -->
       <div id="start-overlay" class="overlay">
         <div class="start-card bounce-in">
-          <div class="hero-character">🚀🎵🎉</div>
+          <div class="hero-character">🚀🎧🎉</div>
           <h2>Ready to Play?</h2>
-          <p>Tap below to start hearing the musical days and numbers!</p>
+          <p>Tap below to start! The game speaks out loud every option you tap!</p>
           <button id="tap-to-start-btn" class="big-action-btn pulse-glow">
             TAP TO PLAY! 🎮
           </button>
@@ -96,12 +100,10 @@
           <p class="question-sub">Each number has its own special musical note and day!</p>
         </div>
 
-        <!-- 1 to 7 Number Buttons Strip -->
         <div class="number-strip" id="number-buttons-strip">
           <!-- Buttons 1 to 7 populated by JS -->
         </div>
 
-        <!-- The Big Sound & Day Discovery Card -->
         <div class="learn-discovery-card" id="learn-discovery-card">
           <div class="discovery-header">
             <span class="discovery-num-tag" id="disc-num-tag">Number 1</span>
@@ -128,7 +130,6 @@
           </div>
         </div>
 
-        <!-- Auto Play All Melody Button -->
         <div class="melody-play-bar">
           <button id="play-all-melody-btn" class="full-song-btn">
             🎼 Play All 7 Days in Sequence! 🎶
@@ -137,7 +138,7 @@
       </section>
 
       <!-- ================================================= -->
-      <!-- LEVEL 2: WHAT'S NEXT? (HYPOTHETICAL / LET'S SAY)  -->
+      <!-- LEVEL 2: WHAT'S NEXT? (WITH AUDIO PREVIEW & VERBAL FEEDBACK) -->
       <!-- ================================================= -->
       <section id="mode-next-day" class="game-screen">
         <div class="prompt-box">
@@ -167,18 +168,56 @@
           </button>
         </div>
 
+        <!-- Clue Helper Bar -->
+        <div class="clue-helper-bar">
+          <span class="clue-label">💡 Number Clues:</span>
+          <button id="toggle-clues-btn" class="clue-toggle-pill">Show Numbers: OFF</button>
+        </div>
+
         <div class="arrow-down">⬇️</div>
 
-        <!-- Choice Cards: NO NUMBERS SHOWN so he doesn't cheat using numbers! -->
+        <!-- Choice Cards: Populated with big audio preview buttons -->
         <div class="choices-container" id="choices-grid">
-          <!-- Populated by JS with pure day cards -->
+          <!-- Populated by JS -->
         </div>
 
         <div id="feedback-message" class="feedback-msg hidden"></div>
       </section>
 
       <!-- ================================================= -->
-      <!-- LEVEL 3: DAY TRAIN (1 TO 7 SEQUENCE)              -->
+      <!-- LEVEL 3: LISTEN & PICK (AUDIO DETECTIVE SUBGAME)  -->
+      <!-- ================================================= -->
+      <section id="mode-audio-detective" class="game-screen">
+        <div class="prompt-box">
+          <div class="prompt-speaker-row">
+            <button id="repeat-detective-btn" class="speaker-pill">🔊 Hear Mission</button>
+            <span class="round-tracker" id="detective-round-indicator">Mission 1/5</span>
+          </div>
+          <h2 class="question-text" id="detective-title">
+            🎧 Listen & Find the Day!
+          </h2>
+          <p class="question-sub" id="detective-sub">
+            Tap the speaker buttons to hear what each card says, then pick the right one!
+          </p>
+        </div>
+
+        <div class="mission-target-card" id="mission-target-card">
+          <div class="target-sub-text" id="mission-prompt-text">Let's say today is Thursday...</div>
+          <div class="target-needed-text">We are looking for: <span id="mission-target-day-name" class="highlight-day">Friday</span>!</div>
+          <button id="mission-hear-target-btn" class="phonics-hint-pill">
+            🔊 Hear Target: "Find Friday"
+          </button>
+        </div>
+
+        <div class="choices-container" id="detective-choices-grid">
+          <!-- Populated by JS with audio mystery cards -->
+        </div>
+
+        <div id="detective-feedback" class="feedback-msg hidden"></div>
+      </section>
+
+      <!-- ================================================= -->
+      <!-- LEVEL 4: DAY TRAIN (1 TO 7 SEQUENCE)              -->
       <!-- ================================================= -->
       <section id="mode-train-order" class="game-screen">
         <div class="prompt-box">

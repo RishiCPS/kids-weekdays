@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#4A90E2">
+  <title>Kids Weekdays Adventure! 🚀</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Floating background decorations -->
+  <div class="bg-decorations" aria-hidden="true">
+    <span class="bubble b1">⭐</span>
+    <span class="bubble b2">🎈</span>
+    <span class="bubble b3">✨</span>
+    <span class="bubble b4">🚀</span>
+    <span class="bubble b5">🌟</span>
+    <span class="bubble b6">☀️</span>
+  </div>
+
+  <!-- Standalone Confetti Canvas -->
+  <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- Header (100% Generic, Zero Child Name) -->
+    <header class="app-header">
+      <div class="user-greeting">
+        <span class="avatar-badge">🧒</span>
+        <div>
+          <h1 class="player-title">Weekdays <span class="name-highlight">Adventure</span> 🌟</h1>
+          <p class="subtitle">Learn Days & Musical Numbers</p>
+        </div>
+      </div>
+      
+      <div class="header-controls">
+        <div class="score-badge" title="Star Points">
+          <span class="star-icon">⭐</span>
+          <span id="star-count">0</span>
+        </div>
+        <button id="sound-btn" class="icon-btn" title="Toggle Sound">🔊</button>
+      </div>
+    </header>
+
+    <!-- Week Convention Switcher -->
+    <section class="settings-bar">
+      <div class="convention-toggle">
+        <span class="toggle-label">Week starts on:</span>
+        <button id="start-monday-btn" class="pill-btn active">Monday 🎒</button>
+        <button id="start-sunday-btn" class="pill-btn">Sunday ☀️</button>
+      </div>
+    </section>
+
+    <!-- Mode Selector Tabs -->
+    <nav class="mode-tabs">
+      <button class="mode-tab active" data-mode="learn-numbers">
+        <span class="tab-icon">🎵</span>
+        <span class="tab-text">Sound & Number</span>
+      </button>
+      <button class="mode-tab" data-mode="next-day">
+        <span class="tab-icon">🔮</span>
+        <span class="tab-text">What's Next?</span>
+      </button>
+      <button class="mode-tab" data-mode="train-order">
+        <span class="tab-icon">🚂</span>
+        <span class="tab-text">Day Train</span>
+      </button>
+    </nav>
+
+    <!-- Main Game Area -->
+    <main class="game-main">
+      <!-- Welcome / Tap to Start Overlay (Unlocks mobile audio) -->
+      <div id="start-overlay" class="overlay">
+        <div class="start-card bounce-in">
+          <div class="hero-character">🚀🎵🎉</div>
+          <h2>Ready to Play?</h2>
+          <p>Tap below to start hearing the musical days and numbers!</p>
+          <button id="tap-to-start-btn" class="big-action-btn pulse-glow">
+            TAP TO PLAY! 🎮
+          </button>
+          <p class="oz-note">🇦🇺 In Australia, school begins on <strong>Monday</strong>!</p>
+        </div>
+      </div>
+
+      <!-- ================================================= -->
+      <!-- LEVEL 1: LEARN THE SOUND & NUMBER COMBINATION     -->
+      <!-- ================================================= -->
+      <section id="mode-learn-numbers" class="game-screen active-screen">
+        <div class="prompt-box">
+          <div class="prompt-speaker-row">
+            <button id="hear-learn-num-btn" class="speaker-pill">🔊 Play Sound Jingle</button>
+            <span class="round-tracker" id="learn-progress-pill">Step 1 of 7</span>
+          </div>
+          <h2 class="question-text" id="learn-num-title">
+            Tap a number to hear its sound!
+          </h2>
+          <p class="question-sub">Each number has its own special musical note and day!</p>
+        </div>
+
+        <!-- 1 to 7 Number Buttons Strip -->
+        <div class="number-strip" id="number-buttons-strip">
+          <!-- Buttons 1 to 7 populated by JS -->
+        </div>
+
+        <!-- The Big Sound & Day Discovery Card -->
+        <div class="learn-discovery-card" id="learn-discovery-card">
+          <div class="discovery-header">
+            <span class="discovery-num-tag" id="disc-num-tag">Number 1</span>
+            <span class="discovery-note-tag" id="disc-note-tag">🎵 Note 1</span>
+          </div>
+
+          <div class="discovery-emoji" id="disc-emoji">🎒</div>
+
+          <div class="discovery-name-wrap" id="disc-name-display">
+            Monday
+          </div>
+
+          <div class="discovery-jingle-pill" id="disc-jingle-pill">
+            🎶 "1 is Monday!"
+          </div>
+
+          <div class="discovery-action-row">
+            <button id="disc-listen-btn" class="discovery-sound-btn">
+              🔔 Play Day Sound Jingle
+            </button>
+            <button id="disc-next-btn" class="discovery-next-btn">
+              Next Day ➔
+            </button>
+          </div>
+        </div>
+
+        <!-- Auto Play All Melody Button -->
+        <div class="melody-play-bar">
+          <button id="play-all-melody-btn" class="full-song-btn">
+            🎼 Play All 7 Days in Sequence! 🎶
+          </button>
+        </div>
+      </section>
+
+      <!-- ================================================= -->
+      <!-- LEVEL 2: WHAT'S NEXT? (HYPOTHETICAL / LET'S SAY)  -->
+      <!-- ================================================= -->
+      <section id="mode-next-day" class="game-screen">
+        <div class="prompt-box">
+          <div class="prompt-speaker-row">
+            <button id="repeat-question-btn" class="speaker-pill" title="Listen again">
+              🔊 Hear Question
+            </button>
+            <span class="round-tracker" id="round-indicator">Round 1/5</span>
+          </div>
+          <h2 id="next-question-text" class="question-text">
+            Let's say today is <span class="highlight-day" id="current-day-display">Monday</span>!
+          </h2>
+          <p class="question-sub" id="next-question-sub">
+            What day comes <strong>NEXT</strong>?
+          </p>
+        </div>
+
+        <div class="day-visual-card" id="day-hero-card">
+          <div class="card-top-badges">
+            <span class="hero-day-number" id="hero-day-number">Number 1</span>
+            <span class="hero-sound-hint" id="hero-sound-hint">🎵 Note 1</span>
+          </div>
+          <span class="hero-day-emoji" id="hero-day-emoji">🎒</span>
+          <div class="hero-day-name-clean" id="hero-day-name-clean">Monday</div>
+          <button id="hear-current-jingle-btn" class="phonics-hint-pill">
+            🔔 Hear Sound: "1 is Monday"
+          </button>
+        </div>
+
+        <div class="arrow-down">⬇️</div>
+
+        <!-- Choice Cards: NO NUMBERS SHOWN so he doesn't cheat using numbers! -->
+        <div class="choices-container" id="choices-grid">
+          <!-- Populated by JS with pure day cards -->
+        </div>
+
+        <div id="feedback-message" class="feedback-msg hidden"></div>
+      </section>
+
+      <!-- ================================================= -->
+      <!-- LEVEL 3: DAY TRAIN (1 TO 7 SEQUENCE)              -->
+      <!-- ================================================= -->
+      <section id="mode-train-order" class="game-screen">
+        <div class="prompt-box">
+          <h2>🚂 Build the Day Train (1 to 7)!</h2>
+          <p>Put all seven days in order from first to last!</p>
+          <button id="hear-train-help-btn" class="speaker-pill">🔊 Tell me what to do</button>
+        </div>
+
+        <div class="train-track-container">
+          <div class="train-engine">🚂 Choo Choo!</div>
+          <div class="train-cars" id="train-slots-container">
+            <!-- Train slots 1 to 7 -->
+          </div>
+        </div>
+
+        <div class="train-pool-label">Tap a day to place it on the next car:</div>
+        <div class="train-blocks-pool" id="train-choices-pool">
+          <!-- Day buttons shuffled -->
+        </div>
+
+        <div class="train-actions">
+          <button id="reset-train-btn" class="secondary-btn">↺ Start Over</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Celebration Modal -->
+    <div id="celebration-modal" class="modal hidden">
+      <div class="modal-card bounce-in">
+        <div class="trophy-icon">🏆</div>
+        <h2 id="celeb-title">FANTASTIC JOB!</h2>
+        <p id="celeb-body">You know all seven days of the week!</p>
+        <div class="stars-awarded">⭐⭐⭐⭐⭐</div>
+        <button id="play-again-btn" class="big-action-btn">Play Again! 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
